@@ -33,6 +33,7 @@ klayout -b -r pya_flatspice.py \
 
 ### description
 generate tech.lef / macro.lef from jsonc/GDS files.
+support only ANTENNAGATEAREA/ANTENNADIFFAREA.
 
 ### usage
 ```bash

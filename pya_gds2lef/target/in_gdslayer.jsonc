@@ -36,17 +36,16 @@
     ["Metal1","Via1"],
     ["Cont"  ,"Metal1"],
     ["Poly"  ,"Cont"],
-    ["ACTIV"  ,"Poly"],
     ["GATE"  ,"Poly"],
     ["DIFF"  ,"Cont"]
   ],
-  //-- conect signals in GDS layer
-  "GDS_LAYER_CONNECT_DIFF":[
-    ["Via2"  ,"Metal3"],
-    ["Metal2","Via2"],
-    ["Via1"  ,"Metal2"],
-    ["Metal1","Via1"],
-    ["Cont"  ,"Metal1"],
-    ["DIFF"  ,"Cont"]
+  //-- OBS in GDS layer
+  "GDS_LAYER_OBS":[
+//    "Cont",
+    "Metal1",
+    "Via1",
+    "Metal2",
+    "Via2",
+    "Metal3"
   ]
 }

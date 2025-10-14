@@ -906,30 +906,36 @@ for cell in top_cells:   #-- search all cell
     
   #--- OBS
   lines_obs=[]
-  for metal_name, text_name in gdslayer_dict["GDS_LAYER_CONNECT_TEXT"].items():
+  #for metal_name, text_name in gdslayer_dict["GDS_LAYER_CONNECT_TEXT"].items():
+  for obs_name in gdslayer_dict["GDS_LAYER_OBS"]:
 
-    ##--- get Metal region
-    index_metal_layer = layout.layer( gdslayer_dict["GDS_LAYER_INFO"][metal_name])
-    metal_region      = pya.Region(cell.shapes(index_metal_layer))
+    ##--- get OBS region
+    index_obs_layer = layout.layer( gdslayer_dict["GDS_LAYER_INFO"][obs_name])
+    obs_region      = pya.Region(cell.shapes(index_obs_layer))
 
-    ##-- remove port region from metal_region
+    ##-- remove port region from obs_region
+    if obs_region.is_empty():
+      continue
+  
     for port_name in port_region.keys():
-      if metal_name in port_region[port_name].keys():
-        metal_region = metal_region - port_region[port_name][metal_name]
+      if obs_name in port_region[port_name].keys():
+        obs_region = obs_region - port_region[port_name][obs_name]
 
     ##-- create RECT 
-    if not metal_region.is_empty():
-      rects=split_manhattan_region_to_rects(metal_region)
+    if obs_region.is_empty():
+      continue
+  
+    rects=split_manhattan_region_to_rects(obs_region)
       
-      lines_obs.append(f"    LAYER {metal_name} ;")
-      for rect in rects:
-        #print(f"[DEBUG] {pin_name} {rect}")
-        x1 = rect.left    * dbu_gds
-        y1 = rect.bottom  * dbu_gds
-        x2 = rect.right   * dbu_gds
-        y2 = rect.top     * dbu_gds
-        
-        lines_obs.append(f"        RECT {x1:.3f} {y1:.3f} {x2:.3f} {y2:.3f} ;")
+    lines_obs.append(f"    LAYER {obs_name} ;")
+    for rect in rects:
+      #print(f"[DEBUG] {pin_name} {rect}")
+      x1 = rect.left    * dbu_gds
+      y1 = rect.bottom  * dbu_gds
+      x2 = rect.right   * dbu_gds
+      y2 = rect.top     * dbu_gds
+      
+      lines_obs.append(f"        RECT {x1:.3f} {y1:.3f} {x2:.3f} {y2:.3f} ;")
         
   ##-- add lines_obs
   if len(lines_obs)>0:
@@ -939,6 +945,8 @@ for cell in top_cells:   #-- search all cell
 
   ##-- end of MACRO
   outlines.append(f"END {macro_name}"); #MACRO
+  outlines.append(f"");
+
 
   #--------------------------------------
   # write to macro.lef
