@@ -1,0 +1,37 @@
+//-- macro files
+{
+  //----------------------------------------------------------
+  "SITE": {
+    "CoreSite":{
+      "class"  : "CORE",
+      "size_by": [1.4, 12.5]
+    }
+  },
+  //----------------------------------------------------------
+	"MACRO"  :{
+	  "sg13g2_inv_1":{
+		  "CLASS"   :["CORE"],
+			"SYMMETRY":["X","Y"],
+			"SITE"    :"CoreSite",
+	    "PIN"     :{
+			   "A"  :{"DIRECTION":"INPUT" ,"USE":"SIGNAL"},
+			   "Y"  :{"DIRECTION":"OUTPUT","USE":"SIGNAL"},
+			   "VDD":{"DIRECTION":"INOUT" ,"USE":"POWER" ,"SHAPE":"ABUTMENT", "NETEXPR":"\"VDD VDD!\""},
+			   "VSS":{"DIRECTION":"INOUT" ,"USE":"GROUND","SHAPE":"ABUTMENT", "NETEXPR":"\"VSS VSS!\""}
+			}
+		},
+	  "sg13g2_a21o_1":{
+		  "CLASS"   :["CORE"],
+			"SYMMETRY":["X","Y"],
+			"SITE"    :"CoreSite",
+	    "PIN"     :{
+			   "A1"  :{"DIRECTION":"INPUT" ,"USE":"SIGNAL"},
+			   "A2"  :{"DIRECTION":"INPUT" ,"USE":"SIGNAL"},
+			   "B1"  :{"DIRECTION":"INPUT" ,"USE":"SIGNAL"},
+			   "X"   :{"DIRECTION":"OUTPUT","USE":"SIGNAL"},
+			   "VDD" :{"DIRECTION":"INOUT" ,"USE":"POWER" ,"SHAPE":"ABUTMENT", "NETEXPR":"\"VDD VDD!\""},
+			   "VSS" :{"DIRECTION":"INOUT" ,"USE":"GROUND","SHAPE":"ABUTMENT", "NETEXPR":"\"VSS VSS!\""}
+			}
+		}
+  }
+}

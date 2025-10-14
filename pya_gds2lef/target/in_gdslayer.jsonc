@@ -1,0 +1,50 @@
+{
+  //-- GDS Layer infomation
+	"GDS_LAYER_INFO":{
+	  "ACTIV"      :[1,0],
+	  "Poly"       :[5,0],
+		"Cont"       :[6,0],
+	  "Metal1"     :[8,0],
+		"Metal1.text":[8,25],
+		"Via1"       :[19,0],
+	  "Metal2"     :[10,0],
+		"Metal2.text":[10,25],
+		"Via2"       :[29,0],
+	  "Metal3"     :[30,0],
+		"Metal3.text":[30,25],
+		"Via3"       :[49,0],
+    "BOUNDARY"   :[189,4]
+	},
+  //-- create new Layer in GDS "support=+ - & not ( )"
+	"GDS_LAYER_CREATE":{
+	  "GATE"       :"gds_regions[\"ACTIV\"] & gds_regions[\"Poly\"]",
+		"DIFF"       :"gds_regions[\"ACTIV\"] - gds_regions[\"Poly\"]"
+	},
+  //-- pin mapping in GDS layer
+	"GDS_LAYER_CONNECT_TEXT":{
+	  "Metal1":"Metal1.text",
+	  "Metal2":"Metal2.text",
+	  "Metal3":"Metal3.text"
+	},
+  //-- conect signals in GDS layer
+	"GDS_LAYER_CONNECT_GATE_DIFF":[
+	  ["Via2"  ,"Metal3"],
+	  ["Metal2","Via2"],
+	  ["Via1"  ,"Metal2"],
+	  ["Metal1","Via1"],
+	  ["Cont"  ,"Metal1"],
+	  ["Poly"  ,"Cont"],
+	  ["ACTIV"  ,"Poly"],
+	  ["GATE"  ,"Poly"],
+	  ["DIFF"  ,"Cont"]
+	],
+  //-- conect signals in GDS layer
+	"GDS_LAYER_CONNECT_DIFF":[
+	  ["Via2"  ,"Metal3"],
+	  ["Metal2","Via2"],
+	  ["Via1"  ,"Metal2"],
+	  ["Metal1","Via1"],
+	  ["Cont"  ,"Metal1"],
+	  ["DIFF"  ,"Cont"]
+	]
+}

@@ -1,0 +1,121 @@
+//-- technology file.
+{
+  //----------------------------------------------------------
+  "info1":{
+    "version"          : 5.8,
+    "busbitchars"      : "\"[]\"",
+    "dividerchar"      : "\"/\"",
+    "namescasesensitive": "ON"
+  },
+
+  //----------------------------------------------------------
+  "units":{
+      "capacitance_picofarads":[null,10],
+      "current_milliamps"     :[null,1000],
+      "voltage_volts"         :[null,1000],
+      "frequency_megahertz"   :[null,10],
+      "database_microns"      :[null,1000]
+  },
+
+  //----------------------------------------------------------
+  "info2":{
+    "manufacturinggrid": 0.001
+  },
+
+//  //----------------------------------------------------------
+//  "layer_masterslice": {
+//    "POLY1":{},
+//    "POLY2":{},
+//    "PDIFF":{}
+//  },
+  
+  //----------------------------------------------------------
+  "layer_cut": {
+    "Cont":{
+      "spacing"  :0.18,
+      "width"    :0.16,
+      "enclosure":[0.05,0.05],
+      "preferenclosure":[0.05, 0.05],
+      "resistance"     :22.0,
+      "antennamodel"   :"OXIDE1",
+      "antennacumarearatio": 30,
+      "antennacumdiffarearatio": 1000
+    },
+    "Via1":{
+      "spacing"            :0.18,
+      "spacing_adjacentcuts_within"   :[0.18,3,0.311],
+      "width"              :0.16,
+      "enclosure_below"    :[null, [0.05,0.05]],
+      "preferenclosure"    :[0.05,0.05],
+      "resistance"         :22.0,
+      "antennacumarearatio": 30,
+      "antennacumdiffarearatio_pwl":[null, [[0,20],[0.159,20],[0.16,80],[100,50000]]],
+      "dccurrentdensity_average"   :[null, 1]
+    }
+  },
+  
+  //----------------------------------------------------------
+  "layer_routing": {
+    "Metal1":{
+      "direction": "HORIZONTAL",
+      "offset"   : 0.0,
+      "spacing"  : 0.6,
+      "pitch"    : 1.9,
+      "width"    : 0.6,
+      "maxwidth" : 20.0,
+      "minimumdensity"            : 20.0,
+      "maximumdensity"            : 60.0,
+      "densitycheckstep"          : 100,
+      "densitycheckwindow"        :[200,200],
+      "minimumcut_width"          :[2,1.4],
+      "height"                    :0.93,
+      "thickness"                 :0.14,
+      "antennacumarearatio"        : 200,
+      "antennacumdiffarearatio_pwl":[null, [[0,200],[0.159,200],[0.16,3200],[100,2000000]]]
+      //"resistance_rpersq"          :[null,0.1],
+      //"capacitance_cpersqdist"     :[null,0.1],
+      //"edgecapacitance"            :0.1,
+      //"dccurrentdensity_average"   :[null,1]
+    },
+    "Metal2":{
+      "direction": "VERTICAL",
+      "offset"   : 0.0,
+      "spacing"  : 0.6,
+      "pitch"    : 1.9,
+      "width"    : 0.6,
+      "maxwidth" : 20.0,
+      "minimumdensity"            : 20.0,
+      "maximumdensity"            : 60.0,
+      "densitycheckstep"          : 100,
+      "densitycheckwindow"        :[200,200],
+      "minimumcut_width"          :[2, 1.4],
+      "height"                    :0.93,
+      "thickness"                 :0.14,
+      "antennacumarearatio"        : 200,
+      "antennacumdiffarearatio_pwl":[null, [[0,200],[0.159,200],[0.16,3200],[100,2000000]]]
+      //"resistance_rpersq"          :[null,0.1],
+      //"capacitance_cpersqdist"     :[null,0.1],
+      //"edgecapacitance"            :0.1,
+      //"dccurrentdensity_average"   :[null, 1]
+    }
+  },
+  
+  //----------------------------------------------------------
+  "via_default":{
+    "Via1_XX":{
+      "resistance": 1.9,
+      "bottom"  :{"layer":"Metal1","rect":[-0.45,-0.45,0.45,0.45]},
+      "via"     :{"layer":"Via1" ,"rect":[-0.25,-0.25,0.25,0.25]},
+      "top"     :{"layer":"Metal2","rect":[-0.45,-0.45,0.4,0.4]}
+    }
+  },
+
+  //----------------------------------------------------------
+  "viarule_generate":{
+    "VGEN1":{
+     "bottom" :{"layer":"Metal1", "enclosure": [0.2, 0.2]},
+     "via"    :{"layer":"Via1"  , "rect":[-0.45,-0.45,0.45,0.45], "spacing_by":[0.95,0.95]},
+     "top"    :{"layer":"Metal2", "enclosure": [0.2, 0.2]}
+    }
+  }  
+}
