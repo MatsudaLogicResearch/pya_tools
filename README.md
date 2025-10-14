@@ -47,9 +47,9 @@ klayout -b -r pya_gds2lef.py \
 
 | オプション名              | 説明                            | 必須 | 備考                   |
 | ------------------- | ----------------------------- | -- | -------------------- |
-| `in_jsonc_tech`     | テクノロジー情報を含むJSONCファイルのパス       | Y | レイヤーや製造情報などを含む       |
-| `in_jsonc_macro`    | マクロ情報を含むJSONCファイルのパス          | Y | 標準セルなどのマクロ情報         |
-| `in_jsonc_gdslayer` | GDSレイヤーマッピング情報を含むJSONCファイルのパス | Y | GDSのレイヤー番号と意味の対応付け   |
+| `in_jsonc_tech`     | テクノロジー情報を含むJSONCファイルのパス       | Y | レイヤーや製造情報などを含む(ex: target/in_tech.jsonc)       |
+| `in_jsonc_macro`    | マクロ情報を含むJSONCファイルのパス          | Y | 標準セルなどのマクロ情報(ex: target/in_macro.jsonc)         |
+| `in_jsonc_gdslayer` | GDSレイヤーマッピング情報を含むJSONCファイルのパス | Y | GDSのレイヤー番号と意味の対応付け(ex: target/in_gdslayer.jsonc)   |
 | `in_gds`            | 入力GDSファイル名                    | Y | 変換対象のGDSレイアウトファイル    |
 | `out_lef_macro`     | 出力するLEFのマクロファイル名              | Y | 標準セルなどのLEFマクロ情報の出力先  |
 | `out_lef_tech`      | 出力するLEFのテクノロジーファイル名           | N | LEF形式のテクノロジーファイルの出力先(out_lef_macroと同じファイル名を指定可能) |

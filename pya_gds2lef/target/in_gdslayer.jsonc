@@ -1,3 +1,5 @@
+//-- The BOUNDARY,GATE and DIFF layers are required.
+//-- This file is a sample for the IHP PDK.
 {
   //-- GDS Layer infomation
   "GDS_LAYER_INFO":{
