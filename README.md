@@ -8,11 +8,11 @@ This project is licensed under the MIT License.
 Please see the LICENSE file for details.
 
 # INSTALL
-'''bash
+```bash
 pip install git+https://github.com/MatsudaLogicResearch/pya_tools.git
 or
 pip install git+https://github.com/MatsudaLogicResearch/pya_tools.git@v0.1.1
-'''
+```
 
 # USAGE
 
