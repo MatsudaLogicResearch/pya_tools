@@ -47,20 +47,20 @@ python -m pya_tools --pya pya_gds2lef --copy-config
 
 ```bash
 python -m pya_tools --pya pya_gds2lef -b \
---rd in_gds=sample.gds \
---rd in_jsonc_gdslayer=gdslayer.jsonc \
---rd in_jsonc_macro=macro.jsonc \
---rd in_jsonc_tech=tech.jsonc  \
---rd out_lef_tech=tech.lef \
---rd out_lef_macro=macro.lef
+-rd in_gds=sample.gds \
+-rd in_jsonc_gdslayer=gdslayer.jsonc \
+-rd in_jsonc_macro=macro.jsonc \
+-rd in_jsonc_tech=tech.jsonc  \
+-rd out_lef_tech=tech.lef \
+-rd out_lef_macro=macro.lef
 ```
 
 * run pya_flatspice*:
 ```bash
 python -m pya_tools --pya flatspice -b \
---rd ifile=input.spice \
---rd ofile=output.spice \
---rd top=top_cell
+-rd ifile=input.spice \
+-rd ofile=output.spice \
+-rd top=top_cell
 ```
 
 ## pya_flatspice
@@ -72,9 +72,9 @@ flatten SPICe netlist.
 | オプション名  | 説明                      | 必須 | 備考                  |
 | ------- | ----------------------- | -- | ------------------- |
 | `--pya pya_flatspice`      | pya_flatspiceスクリプトをklayoutへ渡す                   | Y | |
-| `--rd ifile=` | 入力ファイル名（例: GDSやLEFファイル） | Y | 処理対象となるファイルを指定します   |
-| `--rd ofile=` | 出力ファイル名                 | Y | 結果を書き出すファイル名を指定します  |
-| `--rd top=`   | トップセル名                  | Y | レイアウト内のトップセル名を指定します |
+| `-rd ifile=` | 入力ファイル名（例: GDSやLEFファイル） | Y | 処理対象となるファイルを指定します   |
+| `-rd ofile=` | 出力ファイル名                 | Y | 結果を書き出すファイル名を指定します  |
+| `-rd top=`   | トップセル名                  | Y | レイアウト内のトップセル名を指定します |
 
 
 
@@ -90,11 +90,11 @@ support only ANTENNAGATEAREA/ANTENNADIFFAREA.
 | ------------------- | ----------------------------- | -- | -------------------- |
 | `--pya pya_gds2lef`      | pya_gds2lefスクリプトをklayoutへ渡す                   | Y | |
 | `--copy_config`          | コンフィグファイルの雛形を生成                   | Y | ./config.pya_gds2lef配下に生成     |
-| `--rd in_jsonc_tech=`     | テクノロジー情報を含むJSONCファイルのパス       | Y | レイヤーや製造情報などを含む(ex: target/in_tech.jsonc)       |
-| `--rd in_jsonc_macro=`    | マクロ情報を含むJSONCファイルのパス          | Y | 標準セルなどのマクロ情報(ex: target/in_macro.jsonc)         |
-| `--rd in_jsonc_gdslayer=` | GDSレイヤーマッピング情報を含むJSONCファイルのパス | Y | GDSのレイヤー番号と意味の対応付け(ex: target/in_gdslayer.jsonc)   |
-| `--rd in_gds=`            | 入力GDSファイル名                    | Y | 変換対象のGDSレイアウトファイル    |
-| `--rd out_lef_macro=`     | 出力するLEFのマクロファイル名              | Y | 標準セルなどのLEFマクロ情報の出力先  |
+| `-rd in_jsonc_tech=`     | テクノロジー情報を含むJSONCファイルのパス       | Y | レイヤーや製造情報などを含む(ex: target/in_tech.jsonc)       |
+| `-rd in_jsonc_macro=`    | マクロ情報を含むJSONCファイルのパス          | Y | 標準セルなどのマクロ情報(ex: target/in_macro.jsonc)         |
+| `-rd in_jsonc_gdslayer=` | GDSレイヤーマッピング情報を含むJSONCファイルのパス | Y | GDSのレイヤー番号と意味の対応付け(ex: target/in_gdslayer.jsonc)   |
+| `-rd in_gds=`            | 入力GDSファイル名                    | Y | 変換対象のGDSレイアウトファイル    |
+| `-rd out_lef_macro=`     | 出力するLEFのマクロファイル名              | Y | 標準セルなどのLEFマクロ情報の出力先  |
 | `-rd out_lef_tech=`      | 出力するLEFのテクノロジーファイル名           | N | LEF形式のテクノロジーファイルの出力先(out_lef_macroと同じファイル名を指定可能) |
 
 ### LEF file Validation(Optional)kcheck
