@@ -7,6 +7,13 @@ Copyright (C) 2025 LogicResearch K.K. (Author: MATSUDA Masahiro)
 This project is licensed under the MIT License.
 Please see the LICENSE file for details.
 
+# INSTALL
+'''bash
+pip install git+https://github.com/MatsudaLogicResearch/pya_tools.git
+or
+pip install git+https://github.com/MatsudaLogicResearch/pya_tools.git@v0.1.1
+'''
+
 # USAGE
 
 The pya-based scripts included in this package can be executed in **two ways**:
