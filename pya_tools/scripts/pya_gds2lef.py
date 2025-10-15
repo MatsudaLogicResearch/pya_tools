@@ -347,6 +347,8 @@ def write_lef_tech(tech_dict:dict(), tlef:str, mlef:str):
 
   outlines1 = []
   outlines2 = []
+
+  print(f"[INF] writing tech.lef")
   
   ## info1
   #--------------------------------------
@@ -610,32 +612,47 @@ def trace_region(tech:pya.NetTracerConnectivity, layout:pya.Layout, layout_cell:
 #out_lef_tech="tech.lef"
 #out_lef_macro="macro.lef"
 
+#-- set inital input/output file
+if 'in_jsonc_gdslayer' not in globals():
+  in_jsonc_gdslayer="config.pya_gds2lef/in_gdslayer.jsonc"
+if 'in_jsonc_tech' not in globals():
+  in_jsonc_tech    ="config.pya_gds2lef/in_tech.jsonc"
+if 'in_jsonc_macro' not in globals():
+  in_jsonc_macro   ="config.pya_gds2lef/in_macro.jsonc"
+if 'in_gds' not in globals():
+  in_gds           ="config.pya_gds2lef/sg13g2_stdcell.gds"
 
+if 'out_lef_macro' not in globals():
+  out_lef_macro    ="out_macro.lef"
+  
 #check var & file
 for f in [in_gds, in_jsonc_gdslayer,  in_jsonc_tech, in_jsonc_macro]:
   if not os.path.isfile(f):
     print(f"[ERROR]: Input file '{f}' does not exist.", file=sys.stderr)
     sys.exit(1)
 
-#-- read json files
+#-- print parameter & read json files
 if True:
-  print(f"[INF]: read={in_jsonc_tech}")
+  print(f"[INF]: in_jsonc_tech    ={in_jsonc_tech}")
   tech_dict=load_json_with_comments(in_jsonc_tech)
 
-  print(f"[INF]: read={in_jsonc_macro}")
+  print(f"[INF]: in_jsonc_macro   ={in_jsonc_macro}")
   macro_dict=load_json_with_comments(in_jsonc_macro)
 
-  print(f"[INF]: read={in_jsonc_gdslayer}")
+  print(f"[INF]: in_jsonc_gdslayer={in_jsonc_gdslayer}")
   gdslayer_dict=load_json_with_comments(in_jsonc_gdslayer)
 
-#-- check output file
-if 'out_lef_macro' not in globals():
-  print(f"[ERR]: please set -rd out_lef_macro=<macro.jsonc> option to output LEF.")
-  sys.exit()
-    
-#-- write tech lef
+  print(f"[INF]: in_gds           ={in_gds}")
+  
 if 'out_lef_tech' not in globals():
   out_lef_tech = None
+
+print(f"[INF]: out_lef_macro    ={out_lef_macro}")
+if out_lef_tech:
+  print(f"[INF]: out_lef_tech     ={out_lef_tech}")
+
+
+#-- write tech lef
 write_lef_tech (tech_dict=tech_dict, tlef=out_lef_tech, mlef=out_lef_macro)
 
 #-- read gds & flatten
@@ -670,7 +687,7 @@ for cell in top_cells:   #-- search all cell
   macro_info  = macro_dict["MACRO"][macro_name]
   layout_cell = next((c for c in layout.top_cells() if c.name == macro_name), None)
   
-  print(f"[INFO] target macro={macro_name}")
+  print(f"[INF] target macro={macro_name}")
 
   ####################################################################
   #--get PORT positon in MACRO

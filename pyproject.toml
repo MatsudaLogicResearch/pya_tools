@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pya_tools"
+version = "0.1.0"
+description = "Run KLayout scripts via pip-installed modules"
+authors = [{ name = "LogicResearch K.K.(MATSUDA Masahiro)", email = "matsuda@logic-research.co.jp" }]
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = []
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["pya_tools","pya_tools.*"]
+
+[tool.setuptools.package-data]
+"pya_tools.config.pya_gds2lef" = ["*"]
+#"pya_tools.config.pya_flatspice" = ["*"]
+
+[project.scripts]
+pya_tools = "pya_tools.runner:main"
