@@ -851,18 +851,8 @@ for cell in top_cells:   #-- search all cell
   #-- write lef
   outlines = []
   outlines.append(f"MACRO {macro_name}")
-  outlines.append(f"  ORIGIN 0 0 ;")
-  outlines.append(f"  FOREIGN {macro_name} 0 0 ;")
-  
-  lines=[]
-  for kk,vv in macro_info.items():
-    if kk=="PIN":
-      continue
-    if vv is not None:
-      lines.extend(conv_dict2lef(param={kk:vv}, hier=1))
-  outlines.extend(lines)
 
-  #--- othres
+  ##-- BOUNDARY
   layer_boundary_num      = gdslayer_dict["GDS_LAYER_INFO"]["BOUNDARY"][0]
   layer_boundary_datatype = gdslayer_dict["GDS_LAYER_INFO"]["BOUNDARY"][1]
   layer_boundary_info=layout.layer(layer_boundary_num, layer_boundary_datatype)
@@ -874,7 +864,22 @@ for cell in top_cells:   #-- search all cell
   b_box=boundary_region.bbox()
   w=b_box.width()  * dbu_gds
   h=b_box.height() * dbu_gds
+
+  bottom_x=b_box.p1.x  *dbu_gds
+  bottom_y=b_box.p1.y  *dbu_gds
   
+  outlines.append(f"  ORIGIN 0 0 ;")
+  outlines.append(f"  FOREIGN {macro_name} {bottom_x} {bottom_y} ;")
+  
+  lines=[]
+  for kk,vv in macro_info.items():
+    if kk=="PIN":
+      continue
+    if vv is not None:
+      lines.extend(conv_dict2lef(param={kk:vv}, hier=1))
+  outlines.extend(lines)
+
+  #--- othres
   outlines.append(f"  SIZE {w:.3f} BY {h:.3f} ;")
   
   #--- PIN
