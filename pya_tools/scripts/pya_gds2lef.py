@@ -587,7 +587,8 @@ def trace_region(tech:pya.NetTracerConnectivity, layout:pya.Layout, layout_cell:
     elif shape.is_polygon():
       poly = shape.polygon.transformed(trans)
     elif shape.is_path():
-      poly = shape.path.polygon.transformed(trans)
+      #poly = shape.path.polygon.transformed(trans)
+      poly = shape.path.transformed(trans)
     else:
       #print("[WRN]: Unsupported shape type")
       continue
