@@ -36,8 +36,8 @@
     ["Metal1","Via1"],
     ["Cont"  ,"Metal1"],
     ["Poly"  ,"Cont"],
-    ["GATE"  ,"Poly"],
-    ["DIFF"  ,"Cont"]
+    ["GATEAREA"  ,"Poly"],
+    ["DIFFAREA"  ,"Cont"]
   ],
   //-- OBS in GDS layer
   "GDS_LAYER_OBS":[
