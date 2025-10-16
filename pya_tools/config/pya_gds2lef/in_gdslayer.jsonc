@@ -1,4 +1,4 @@
-//-- The BOUNDARY,GATE and DIFF layers are required.
+//-- The BOUNDARY layers is required. GATEAREA/DIFFAREA layers are optional for ANTENNA.
 //-- This file is a sample for the IHP PDK.
 {
   //-- GDS Layer infomation
@@ -19,8 +19,8 @@
   },
   //-- create new Layer in GDS "support=+ - & not ( )"
   "GDS_LAYER_CREATE":{
-    "GATE"       :"gds_regions[\"ACTIV\"] & gds_regions[\"Poly\"]",
-    "DIFF"       :"gds_regions[\"ACTIV\"] - gds_regions[\"Poly\"]"
+    "GATEAREA"       :"gds_regions[\"ACTIV\"] & gds_regions[\"Poly\"]",
+    "DIFFAREA"       :"gds_regions[\"ACTIV\"] - gds_regions[\"Poly\"]"
   },
   //-- pin mapping in GDS layer
   "GDS_LAYER_CONNECT_TEXT":{

@@ -281,63 +281,63 @@ def split_manhattan_polygon_to_rects(polygon: pya.Polygon) -> list:
 
   return rects
 
-# ------------------------
-# search pin region
-# ------------------------
-def get_pin_rects(cell: pya.Cell, macro_dict=None) -> list:
-
-  pin_list=[]
-  if macro_dict is None:
-    print(f"[ERROR] macro_dict is Empty!")
-    sys.exit()
-  
-  #-- search TEXT on All Metal.
-  for layer_name,v in macro_dict["METAL_DRAW_TEXT_LAYER"].items():
-    (layer_text_num,layer_text_datatype) = v["TEXT"]
-    (layer_draw_num,layer_draw_datatype) = v["DRAW"]
-    
-    layer_text_info=ly.layer(layer_text_num, layer_text_datatype)
-    layer_draw_info=ly.layer(layer_draw_num, layer_draw_datatype)
-
-    connect(layer_text_info, layer_draw_info)
-
-    
-    #-- search draw region by LAYER
-    metal_region = pya.Region(cell.shapes(layer_draw_info)).merged()
-    if metal_region.is_empty():
-      continue
-
-    #-- text on same LAYER
-    for text_shape in cell.shapes(layer_text_info).each():
-
-      #-- is text?
-      if not text_shape.is_text():
-        continue
-      text_name=text_shape.text.string
-
-      #-- check if text is inside of shape?
-      text_point=text_shape.text.trans.disp
-      pad_shape=next((p for p in metal_region.each() if p.bbox().contains(text_point) and p.inside(text_point)),None)
-      if pad_shape is None:
-        continue
-
-      #-- convert from polygon to manhattan
-      pad_manhattan=to_manhattan_polygon(polygon=pad_shape)
-      
-      #-- convert from manhattan-polygon to list[box]
-      pad_rects = split_manhattan_polygon_to_rects(polygon=pya.Polygon(pad_manhattan))
-
-      if pad_rects is None:
-        print(f"[ERROR] TEXT/DRAW are not overlap. text={text_name}, layer={layer_name}")
-      else:
-        pin_list.append((text_name, layer_name, pad_rects))
-
-  #--
-  if len(pin_list)<1:
-    print(f"[ERR] no pad exist.")
-    sys.exit()
-
-  return pin_list
+#--# ------------------------
+#--# search pin region
+#--# ------------------------
+#--def get_pin_rects(cell: pya.Cell, macro_dict=None) -> list:
+#--
+#--  pin_list=[]
+#--  if macro_dict is None:
+#--    print(f"[ERROR] macro_dict is Empty!")
+#--    sys.exit()
+#--  
+#--  #-- search TEXT on All Metal.
+#--  for layer_name,v in macro_dict["METAL_DRAW_TEXT_LAYER"].items():
+#--    (layer_text_num,layer_text_datatype) = v["TEXT"]
+#--    (layer_draw_num,layer_draw_datatype) = v["DRAW"]
+#--    
+#--    layer_text_info=ly.layer(layer_text_num, layer_text_datatype)
+#--    layer_draw_info=ly.layer(layer_draw_num, layer_draw_datatype)
+#--
+#--    connect(layer_text_info, layer_draw_info)
+#--
+#--    
+#--    #-- search draw region by LAYER
+#--    metal_region = pya.Region(cell.shapes(layer_draw_info)).merged()
+#--    if metal_region.is_empty():
+#--      continue
+#--
+#--    #-- text on same LAYER
+#--    for text_shape in cell.shapes(layer_text_info).each():
+#--
+#--      #-- is text?
+#--      if not text_shape.is_text():
+#--        continue
+#--      text_name=text_shape.text.string
+#--
+#--      #-- check if text is inside of shape?
+#--      text_point=text_shape.text.trans.disp
+#--      pad_shape=next((p for p in metal_region.each() if p.bbox().contains(text_point) and p.inside(text_point)),None)
+#--      if pad_shape is None:
+#--        continue
+#--
+#--      #-- convert from polygon to manhattan
+#--      pad_manhattan=to_manhattan_polygon(polygon=pad_shape)
+#--      
+#--      #-- convert from manhattan-polygon to list[box]
+#--      pad_rects = split_manhattan_polygon_to_rects(polygon=pya.Polygon(pad_manhattan))
+#--
+#--      if pad_rects is None:
+#--        print(f"[ERROR] TEXT/DRAW are not overlap. text={text_name}, layer={layer_name}")
+#--      else:
+#--        pin_list.append((text_name, layer_name, pad_rects))
+#--
+#--  #--
+#--  if len(pin_list)<1:
+#--    print(f"[ERR] no pad exist.")
+#--    sys.exit()
+#--
+#--  return pin_list
 
 
 def write_lef_tech(tech_dict:dict(), tlef:str, mlef:str):
@@ -695,18 +695,29 @@ for cell in top_cells:   #-- search all cell
   port_layer_pos={}
   for metal_name, text_name in gdslayer_dict["GDS_LAYER_CONNECT_TEXT"].items():
     index_text_layer  = layout.layer( gdslayer_dict["GDS_LAYER_INFO"][text_name])
-    for shape in layout_cell.shapes(index_text_layer):
+    #for shape in layout_cell.shapes(index_text_layer):
+    shape_itrs = layout_cell.begin_shapes_rec(index_text_layer)
+    shape_itrs.max_depth=0
+    
+    for shape_itr in shape_itrs:
+      shape=shape_itr.shape()
+      
+      ##-- chekc text
       if not shape.is_text():
         continue
-
+    
+      ##-- get text
       port_name = shape.text.string
       port_point= shape.text.trans.disp
 
+      ##-- get text only 1 positon / 1 layer
       if port_name not in port_layer_pos:
         port_layer_pos[port_name] = {}
-        
-      port_layer_pos[port_name][metal_name]=port_point
 
+      if metal_name not in port_layer_pos[port_name]:
+        port_layer_pos[port_name][metal_name]=port_point
+        #print(f"[DBG]: port_name={port_name}, port_layer={metal_name}")
+      
   if not port_layer_pos:
     print(f"[ERR] not Text is exist for All PORT.")
     sys.exit()
@@ -794,7 +805,7 @@ for cell in top_cells:   #-- search all cell
         #print(f"[DBG]: set port_region for {port_name}")
         
   ####################################################################
-  #--get GATE AREA
+  #--get GATEAREA
   
   ##-- connect symbols
   for pair in gdslayer_dict["GDS_LAYER_CONNECT_GATE_DIFF"]:
@@ -813,26 +824,29 @@ for cell in top_cells:   #-- search all cell
       start_layer_index = layer_val_index[1]
 
       ###-- get GATE region & area
-      layer_val_index   = symbol_name_val_index["GATE"]
-      stop_layer_index  = layer_val_index[1]
-      
-      region = trace_region(tech4port, layout, layout_cell, start_point, start_layer_index, port_name, stop_layer_index)
-      if region:
-        if port_name not in gate_area:
-          gate_area[port_name]={}
-          
-        gate_area[port_name][metal_name] = region.area() * (dbu_gds * dbu_gds)
+      if "GATEAREA" in symbol_name_val_index.keys():
+            
+        layer_val_index   = symbol_name_val_index["GATEAREA"]
+        stop_layer_index  = layer_val_index[1]
+        
+        region = trace_region(tech4port, layout, layout_cell, start_point, start_layer_index, port_name, stop_layer_index)
+        if region:
+          if port_name not in gate_area:
+            gate_area[port_name]={}
+            
+          gate_area[port_name][metal_name] = region.area() * (dbu_gds * dbu_gds)
 
       ###-- get DIFF region & area
-      layer_val_index   = symbol_name_val_index["DIFF"]
-      stop_layer_index  = layer_val_index[1]
-      
-      region = trace_region(tech4port, layout, layout_cell, start_point, start_layer_index, port_name, stop_layer_index)
-      if region:
-        if port_name not in diff_area:
-          diff_area[port_name]={}
-          
-        diff_area[port_name][metal_name] = region.area() * (dbu_gds * dbu_gds)
+      if "DIFFAREA" in symbol_name_val_index.keys():
+        layer_val_index   = symbol_name_val_index["DIFFAREA"]
+        stop_layer_index  = layer_val_index[1]
+        
+        region = trace_region(tech4port, layout, layout_cell, start_point, start_layer_index, port_name, stop_layer_index)
+        if region:
+          if port_name not in diff_area:
+            diff_area[port_name]={}
+            
+          diff_area[port_name][metal_name] = region.area() * (dbu_gds * dbu_gds)
 
   #-- write lef
   outlines = []
