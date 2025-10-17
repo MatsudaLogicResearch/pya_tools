@@ -4,6 +4,11 @@
 
 ---
 
+## [0.1.4] 2025-10-17
+### Modified
+- pya_gds2lef
+ - Added timestamp comment to the top of the LEF file for traceability.
+
 ## [0.1.3] 2025-10-16
 ### Modified
 - pya_gds2lef
