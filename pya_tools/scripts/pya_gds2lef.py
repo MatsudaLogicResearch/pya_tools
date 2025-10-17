@@ -478,15 +478,15 @@ def write_lef_tech(tech_dict:dict(), tlef:str, mlef:str):
       outlines2.extend(lines)
 
 
-  #--------------------------------------
-  # write to file
-  if tlef:
-    with open(tlef, 'w') as f:
-      s = "\n".join(outlines1) + "\n"
-      f.write(s)
-
-      s = "\n".join(outlines2) + "\n"
-      f.write(s)
+  ##--------------------------------------
+  ## write to file
+  #if tlef:
+  #  with open(tlef, 'w') as f:
+  #    s = "\n".join(outlines1) + "\n"
+  #    f.write(s)
+  #
+  #    s = "\n".join(outlines2) + "\n"
+  #    f.write(s)
 
   #--------------------------------------
   # tech.lef
@@ -511,6 +511,8 @@ def write_lef_tech(tech_dict:dict(), tlef:str, mlef:str):
 
       ##- write to mlef
       with open(mlef, 'w') as f:
+        f.write(header)
+        
         s = "\n".join(outlines1) + "\n"
         f.write(s)
         
