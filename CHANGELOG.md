@@ -4,6 +4,11 @@
 
 ---
 
+## [0.1.5] 2025-10-27
+### Modified
+- pya_gds2lef
+ - Support Text or Pin Polygon as PinText.
+
 ## [0.1.4] 2025-10-17
 ### Modified
 - pya_gds2lef

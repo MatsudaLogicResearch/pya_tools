@@ -22,11 +22,11 @@
     "GATEAREA"       :"gds_regions[\"ACTIV\"] & gds_regions[\"Poly\"]",
     "DIFFAREA"       :"gds_regions[\"ACTIV\"] - gds_regions[\"Poly\"]"
   },
-  //-- pin mapping in GDS layer
+  //-- pin mapping in GDS layer (Metal layer Name: [TEXT layer Name, Pin layer Name])
   "GDS_LAYER_CONNECT_TEXT":{
-    "Metal1":"Metal1.text",
-    "Metal2":"Metal2.text",
-    "Metal3":"Metal3.text"
+    "Metal1":["Metal1.text", null],
+    "Metal2":["Metal2.text", "Metal2.text"],
+    "Metal3":["Metal3.text", "Metal2.text"]
   },
   //-- conect signals in GDS layer
   "GDS_LAYER_CONNECT_GATE_DIFF":[

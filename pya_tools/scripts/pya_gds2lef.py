@@ -676,9 +676,9 @@ write_lef_tech (tech_dict=tech_dict, tlef=out_lef_tech, mlef=out_lef_macro)
 layout = pya.Layout()
 layout.read(in_gds)
 
-for c in layout.each_cell():
-  for i in c.each_inst():
-    i.flatten()
+#for c in layout.each_cell():
+#  for i in c.each_inst():
+#    i.flatten()
 
 #-- get parameter from GDS    
 top_cells=layout.top_cells()
@@ -702,51 +702,73 @@ for cell in top_cells:   #-- search all cell
   #-- 
   macro_name  = cell.name
   macro_info  = macro_dict["MACRO"][macro_name]
-  layout_cell = next((c for c in layout.top_cells() if c.name == macro_name), None)
+  #layout_cell = next((c for c in layout.top_cells() if c.name == macro_name), None)
+
+  layout_cell=cell
   
   print(f"[INF] target macro={macro_name}")
 
   ####################################################################
   #--get PORT positon in MACRO
   
-  port_layer_pos={}
-  for metal_name, text_name in gdslayer_dict["GDS_LAYER_CONNECT_TEXT"].items():
+  port_layer_pos_list={}
+  #print(gdslayer_dict["GDS_LAYER_CONNECT_TEXT"])
+  #for metal_name, text_name in gdslayer_dict["GDS_LAYER_CONNECT_TEXT"].items():
+  for metal_name, text_pin_list in gdslayer_dict["GDS_LAYER_CONNECT_TEXT"].items():
+    #-- get text_name/pin_name
+    if len(text_pin_list) != 2:
+      print(f"[ERR]: length of GDS_LAYER_CONNECT_TEXT={len(text_pin_list)}. It must be 2.")
+      sys.exit()
+    
+    text_name=text_pin_list[0]
+    pin_name =text_pin_list[1]
+
     index_text_layer  = layout.layer( gdslayer_dict["GDS_LAYER_INFO"][text_name])
-    #for shape in layout_cell.shapes(index_text_layer):
+
+    ##-- search text shapes with depth=0(only top cell)
     shape_itrs = layout_cell.begin_shapes_rec(index_text_layer)
     shape_itrs.max_depth=0
-    
+
     for shape_itr in shape_itrs:
       shape=shape_itr.shape()
+      #shape=shape_itr
+
+      if isinstance(shape, pya.CellInstArray):
+        continue
       
       ##-- chekc text
       if not shape.is_text():
         continue
-    
+
       ##-- get text
       port_name = shape.text.string
       port_point= shape.text.trans.disp
 
-      ##-- get text only 1 positon / 1 layer
-      if port_name not in port_layer_pos:
-        port_layer_pos[port_name] = {}
+      ##-- get text position list
+      if port_name not in port_layer_pos_list:
+        port_layer_pos_list[port_name] = {}
 
-      if metal_name not in port_layer_pos[port_name]:
-        port_layer_pos[port_name][metal_name]=port_point
-        #print(f"[DBG]: port_name={port_name}, port_layer={metal_name}")
+      if metal_name not in port_layer_pos_list[port_name]:
+        port_layer_pos_list[port_name][metal_name]=[]
+
+      ##--
+      port_layer_pos_list[port_name][metal_name].append(port_point)
       
-  if not port_layer_pos:
+  if not port_layer_pos_list:
     print(f"[ERR] not Text is exist for All PORT.")
     sys.exit()
 
-  sorted_port_layer_pos = OrderedDict()
-  for port_name in sorted(port_layer_pos.keys()):
-    sorted_port_layer_pos[port_name] = OrderedDict()
-    for metal_name in sorted(port_layer_pos[port_name].keys()):
-      sorted_port_layer_pos[port_name][metal_name] = port_layer_pos[port_name][metal_name]
-    
-  #print(f"[DBG]: port_layer_pos")
+  sorted_port_layer_pos_list = OrderedDict()
+  for port_name in sorted(port_layer_pos_list.keys()):
+    sorted_port_layer_pos_list[port_name] = OrderedDict()
+    for metal_name in sorted(port_layer_pos_list[port_name].keys()):
+      sorted_port_layer_pos_list[port_name][metal_name] = port_layer_pos_list[port_name][metal_name]
 
+  ####################################################################
+  ##-- flatten
+  for i in layout_cell.each_inst():
+    i.flatten()
+  
   ####################################################################
   ##-- create new layer for signal-connection
 
@@ -783,7 +805,6 @@ for cell in top_cells:   #-- search all cell
     #print(f"[DBG]: name={ly_name}, index={new_layer_index}")
     
   ####################################################################
-  #--get PORT AREA
 
   ##-- create symbol
   tech4port = pya.NetTracerConnectivity()
@@ -791,36 +812,71 @@ for cell in top_cells:   #-- search all cell
     tech4port.symbol(symbol_name, symbol_val_index[0])
 
   ##-- connect symbols for TEXT/MEAL
-  for metal_name, text_name in gdslayer_dict["GDS_LAYER_CONNECT_TEXT"].items():
+  for metal_name, text_pin_list in gdslayer_dict["GDS_LAYER_CONNECT_TEXT"].items():
+    text_name=text_pin_list[0]
     tech4port.connection(metal_name, text_name)
-  
-  ##-- trace from PORT to Metal
-  port_region={}
-  for port_name in sorted_port_layer_pos.keys():
-    for metal_name in sorted_port_layer_pos[port_name].keys():
 
-      start_point       = sorted_port_layer_pos[port_name][metal_name]
-      #start_layer_index = layout.layer( gdslayer_dict["GDS_LAYER_INFO"][metal_name])
-      
-      layer_val_index   = symbol_name_val_index[metal_name]
-      start_layer_index = layer_val_index[1]
-      
-      stop_layer_index  = start_layer_index
-      
-      ###-- get PORT region
-      region = trace_region(tech4port, layout, layout_cell, start_point, start_layer_index, port_name, stop_layer_index)
-      if region:
-        if port_name not in port_region:
-          port_region[port_name]={}
+  ####################################################################
+  #--search Metal around TEXT
+  port_region_list={}
 
-        ####- manhattanize
-        #manh_region =to_manhattan_region(region)
-        manh_region =region
+  for port_name in sorted_port_layer_pos_list.keys():
+    for metal_name in sorted_port_layer_pos_list[port_name].keys():
 
-        ###- save
-        port_region[port_name][metal_name] = manh_region
-        #print(f"[DBG]: set port_region for {port_name}")
-        
+      ##--- 
+      points = sorted_port_layer_pos_list[port_name][metal_name]
+      
+      ##-- LEYER NAME
+      text_name=gdslayer_dict["GDS_LAYER_CONNECT_TEXT"][metal_name][0]
+      pin_name =gdslayer_dict["GDS_LAYER_CONNECT_TEXT"][metal_name][1]
+
+      print(f"[DBG]:   port_name={port_name}, metal_name={metal_name}, text_name={text_name}, pin_name={pin_name}")
+      
+      ##--DB INDEX
+      index_metal_layer = layout.layer( gdslayer_dict["GDS_LAYER_INFO"][metal_name])
+      index_text_layer  = layout.layer( gdslayer_dict["GDS_LAYER_INFO"][text_name])
+      index_pin_layer   = layout.layer( gdslayer_dict["GDS_LAYER_INFO"][pin_name]) if pin_name else -1
+
+      ##--REGION
+      region_metal = pya.Region(layout_cell.shapes(index_metal_layer))
+      region_metal.merge()
+      
+      if index_pin_layer>-1 :
+        region_pin   = pya.Region(layout_cell.shapes(index_pin_layer)) & region_metal
+      else :
+        region_pin = pya.Region(); # empty
+      region_pin.merge()
+      
+      ##-- prepare port_region_list
+      if port_name not in port_region_list:
+        port_region_list[port_name]={}
+      if metal_name not in port_region_list[port_name]:
+        port_region_list[port_name][metal_name]=[]
+      
+      ##--get REGION
+      if region_pin.is_empty():
+        ##--- No PIN LAYER ----------------------------------
+        for mp in region_metal:  ### get polygon
+          #if any(r.inside(p) for p in points):
+          mr=pya.Region(mp)
+          if any(mp.inside(p) for p in points):
+            manh_region =to_manhattan_region(mr)
+            port_region_list[port_name][metal_name].append(manh_region)
+            print(f"[DBG]:   port_region_list(text) for {port_name}/{metal_name}: {mr}")
+          
+      else:  ###-- region_pin.is_not_empty()
+        ##--- EXIST PIN LAYER -------------------------------
+        for pp in region_pin:  #### get polyon
+          pr=pya.Region(pp)
+          if any(pp.inside(p) for p in points):
+            manh_region =to_manhattan_region(pr)
+            port_region_list[port_name][metal_name].append(manh_region)
+            print(f"[DBG]:   port_region_list(pin) for {port_name}/{metal_name}: {pr}")
+               
+
+  #print(f"[DBG]:{port_region_list}")
+  #sys.exit()
+            
   ####################################################################
   #--get GATEAREA
   
@@ -833,10 +889,15 @@ for cell in top_cells:   #-- search all cell
   ##-- trace from PORT to GATE/DIFF
   gate_area={}
   diff_area={}
-  for port_name in sorted_port_layer_pos.keys():
-    for metal_name in sorted_port_layer_pos[port_name].keys():
+  for port_name in sorted_port_layer_pos_list.keys():
+    for metal_name in sorted_port_layer_pos_list[port_name].keys():
 
-      start_point       = sorted_port_layer_pos[port_name][metal_name]
+      points = sorted_port_layer_pos_list[port_name][metal_name];
+      if len(points)<1:
+        continue
+
+      ##-- use only 1 point
+      start_point       = points[0]
       layer_val_index   = symbol_name_val_index[metal_name]
       start_layer_index = layer_val_index[1]
 
@@ -887,6 +948,7 @@ for cell in top_cells:   #-- search all cell
   
   outlines.append(f"  ORIGIN 0 0 ;")
   outlines.append(f"  FOREIGN {macro_name} {bottom_x} {bottom_y} ;")
+  #outlines.append(f"  FOREIGN 0 0 ;")
   
   lines=[]
   for kk,vv in macro_info.items():
@@ -908,13 +970,13 @@ for cell in top_cells:   #-- search all cell
   for pin_name,pin_params in pin_info_dict.items():
 
     #-- check if pin is exist in GDS
-    #print (port_region)
-    if pin_name not in port_region.keys():
+    #print (port_region_list)
+    if pin_name not in port_region_list.keys():
       print(f"[ERR] {pin_name} is not exist in GDS.")
       sys.exit()
       
     #-- write data  for PIN
-    layer_region=port_region[pin_name]
+    layer_region=port_region_list[pin_name]
     outlines.append(f"  PIN {pin_name}")
     
     #-- write data from macro.json
@@ -941,17 +1003,22 @@ for cell in top_cells:   #-- search all cell
     
     layers = sorted(layer_region.keys())
     for layer in layers:
+      if len(layer_region[layer])<1:
+        continue
+    
       outlines.append(f"      LAYER {layer} ;")
 
-      rects=split_manhattan_region_to_rects(layer_region[layer])
-      for rect in rects:
-        #print(f"[DEBUG] {pin_name} {rect}")
-        x1 = rect.left    * dbu_gds
-        y1 = rect.bottom  * dbu_gds
-        x2 = rect.right   * dbu_gds
-        y2 = rect.top     * dbu_gds
+      for r in layer_region[layer]:
+        #rects=split_manhattan_region_to_rects(layer_region[layer])
+        rects=split_manhattan_region_to_rects(r)
+        for rect in rects:
+          #print(f"[DEBUG] {pin_name} {rect}")
+          x1 = rect.left    * dbu_gds
+          y1 = rect.bottom  * dbu_gds
+          x2 = rect.right   * dbu_gds
+          y2 = rect.top     * dbu_gds
         
-        outlines.append(f"        RECT {x1:.3f} {y1:.3f} {x2:.3f} {y2:.3f} ;")
+          outlines.append(f"        RECT {x1:.3f} {y1:.3f} {x2:.3f} {y2:.3f} ;")
         
       outlines.append(f"    END"); #PORT
       
@@ -970,9 +1037,15 @@ for cell in top_cells:   #-- search all cell
     if obs_region.is_empty():
       continue
   
-    for port_name in port_region.keys():
-      if obs_name in port_region[port_name].keys():
-        obs_region = obs_region - port_region[port_name][obs_name]
+    for port_name in port_region_list.keys():
+      if obs_name in port_region_list[port_name].keys():
+
+        #obs_region = obs_region - port_region[port_name][obs_name]
+        pin_region=pya.Region()
+        for p in port_region_list[port_name][obs_name]:
+          pin_region.insert(p)
+        
+        obs_region = obs_region - pin_region
 
     ##-- create RECT 
     if obs_region.is_empty():
