@@ -202,145 +202,43 @@ def split_manhattan_region_to_rects(region: pya.Region) -> list:
   return rects
 
 def split_manhattan_polygon_to_rects(polygon: pya.Polygon) -> list:
-  """
-  入力 polygonを矩形に分割し、すべての矩形をリストで返す
-  """
+    """
+    任意のマンハッタン Polygon を上下左右の凸凹に対応して矩形に分割
+    """
 
-  def polygon_to_point_list(polygon):
-    return [p for p in polygon.to_simple_polygon().each_point()]
+    def polygon_to_points(poly):
+        # Polygon を単純化して Point のリストに変換
+        simple = poly.to_simple_polygon()
+        return [p for p in simple.each_point()]
 
-  def find_top_y(points, x, y):
-    # 指定された (x, y) に対し、直上にある点を探す
-    candidates = [p for p in points if p.x == x and p.y > y]
-    if not candidates:
-      return None
-  
-    return min(candidates, key=lambda p: p.y)
+    rects = []
+    remaining = pya.Region(polygon)
 
-  def extract_rectangle(points):
-    # 0. 終了条件：矩形（4点）になったらBoxに変換して返す
-    if len(points) == 4:
-      xs = [p.x for p in points]
-      ys = [p.y for p in points]
-      return [pya.Box(min(xs), min(ys), max(xs), max(ys))]
+    while not remaining.is_empty():
+        # Region 内の最初の Polygon
+        poly = next(remaining.each())
+        points = polygon_to_points(poly)
 
-    # 1. 最も下のYを取得
-    y0 = min(p.y for p in points)
+        # X座標順にソートして矩形を抽出
+        xs = sorted(set(p.x for p in points))
+        ys = sorted(set(p.y for p in points))
 
-    # 2. y0を持つ点の中で最も左のX
-    y0_points = [p for p in points if p.y == y0]
-    x0 = min(p.x for p in y0_points)
-    pb_l = pya.Point(x0, y0)
+        # 最小矩形を左下から右上に作る
+        for i in range(len(xs) - 1):
+            for j in range(len(ys) - 1):
+                x0, x1 = xs[i], xs[i + 1]
+                y0, y1 = ys[j], ys[j + 1]
+                candidate = pya.Box(x0, y0, x1, y1)
+                # この Box が Polygon 内に含まれるかチェック
+                box_region = pya.Region(candidate)
+                if not (box_region - remaining).is_empty():
+                    continue  # Polygon の外ならスキップ
+                rects.append(candidate)
+                # Region から差分
+                remaining -= box_region
 
-    # 3. 同じY0の点の中で最も右のX
-    x1 = max(p.x for p in y0_points)
-    pb_r = pya.Point(x1, y0)
+    return rects
 
-    # 4. 左右の直上の点（PH_L, PH_R）を取得
-    ph_l = find_top_y(points, x0, y0)
-    ph_r = find_top_y(points, x1, y0)
-
-    if not ph_l or not ph_r:
-      print(f"[ERROR] upper point(PH_L/PH_R) are not exist in manhattan-polygon.")
-      sys.exit()
-      #raise RuntimeError("PH_L or PH_R not found")
-
-    y1 = ph_l.y
-    y2 = ph_r.y
-
-    # 5. PB_L ~ PH_L, PB_R ~ PH_R で囲まれた矩形内に中間のY座標があるか探す
-    min_y = min(y1, y2)
-    inner_points = [p for p in points if p.x > x0 and p.x < x1 and p.y > y0 and p.y < min_y]
-
-    if inner_points:
-      y3 = min(p.y for p in inner_points)  # 最も近い内包Y
-      rect = pya.Box(x0, y0, x1, y3)
-    else:
-      rect = pya.Box(x0, y0, x1, min_y)
-
-    return rect
-
-  # 開始：Regionとして差分処理を行う
-  remaining_region = pya.Region(polygon)
-  rects = []
-
-  while not remaining_region.is_empty():
-    # 最初のポリゴンだけ使う（複数ある場合はループで回る）
-    first_poly = next(remaining_region.each())
-
-    points = polygon_to_point_list(first_poly)
-    rect = extract_rectangle(points)
-    if isinstance(rect, list):
-      rect_box = rect[0]
-    else:
-      rect_box = rect
-
-    rects.append(rect_box)
-    #print(f"type2={type(rect_box)}, type3={type(rects)}")
-
-    # RECT を Region として切り出し、差分にして残す
-    rect_region = pya.Region(rect_box)
-    remaining_region = remaining_region - rect_region
-
-  return rects
-
-#--# ------------------------
-#--# search pin region
-#--# ------------------------
-#--def get_pin_rects(cell: pya.Cell, macro_dict=None) -> list:
-#--
-#--  pin_list=[]
-#--  if macro_dict is None:
-#--    print(f"[ERROR] macro_dict is Empty!")
-#--    sys.exit()
-#--  
-#--  #-- search TEXT on All Metal.
-#--  for layer_name,v in macro_dict["METAL_DRAW_TEXT_LAYER"].items():
-#--    (layer_text_num,layer_text_datatype) = v["TEXT"]
-#--    (layer_draw_num,layer_draw_datatype) = v["DRAW"]
-#--    
-#--    layer_text_info=ly.layer(layer_text_num, layer_text_datatype)
-#--    layer_draw_info=ly.layer(layer_draw_num, layer_draw_datatype)
-#--
-#--    connect(layer_text_info, layer_draw_info)
-#--
-#--    
-#--    #-- search draw region by LAYER
-#--    metal_region = pya.Region(cell.shapes(layer_draw_info)).merged()
-#--    if metal_region.is_empty():
-#--      continue
-#--
-#--    #-- text on same LAYER
-#--    for text_shape in cell.shapes(layer_text_info).each():
-#--
-#--      #-- is text?
-#--      if not text_shape.is_text():
-#--        continue
-#--      text_name=text_shape.text.string
-#--
-#--      #-- check if text is inside of shape?
-#--      text_point=text_shape.text.trans.disp
-#--      pad_shape=next((p for p in metal_region.each() if p.bbox().contains(text_point) and p.inside(text_point)),None)
-#--      if pad_shape is None:
-#--        continue
-#--
-#--      #-- convert from polygon to manhattan
-#--      pad_manhattan=to_manhattan_polygon(polygon=pad_shape)
-#--      
-#--      #-- convert from manhattan-polygon to list[box]
-#--      pad_rects = split_manhattan_polygon_to_rects(polygon=pya.Polygon(pad_manhattan))
-#--
-#--      if pad_rects is None:
-#--        print(f"[ERROR] TEXT/DRAW are not overlap. text={text_name}, layer={layer_name}")
-#--      else:
-#--        pin_list.append((text_name, layer_name, pad_rects))
-#--
-#--  #--
-#--  if len(pin_list)<1:
-#--    print(f"[ERR] no pad exist.")
-#--    sys.exit()
-#--
-#--  return pin_list
 
 
 def write_lef_tech(tech_dict:dict(), tlef:str, mlef:str):
@@ -716,13 +614,14 @@ for cell in top_cells:   #-- search all cell
   #for metal_name, text_name in gdslayer_dict["GDS_LAYER_CONNECT_TEXT"].items():
   for metal_name, text_pin_list in gdslayer_dict["GDS_LAYER_CONNECT_TEXT"].items():
     #-- get text_name/pin_name
-    if len(text_pin_list) != 2:
-      print(f"[ERR]: length of GDS_LAYER_CONNECT_TEXT={len(text_pin_list)}. It must be 2.")
+    if len(text_pin_list) != 3:
+      print(f"[ERR]: length of GDS_LAYER_CONNECT_TEXT={len(text_pin_list)}. It must be 3.")
       sys.exit()
     
     text_name=text_pin_list[0]
     pin_name =text_pin_list[1]
-
+    space_um =text_pin_list[2]
+    
     index_text_layer  = layout.layer( gdslayer_dict["GDS_LAYER_INFO"][text_name])
 
     ##-- search text shapes with depth=0(only top cell)
@@ -766,8 +665,9 @@ for cell in top_cells:   #-- search all cell
 
   ####################################################################
   ##-- flatten
-  for i in layout_cell.each_inst():
-    i.flatten()
+  layout_cell.flatten(True)
+  #for i in layout_cell.each_inst():
+  #  i.flatten()
   
   ####################################################################
   ##-- create new layer for signal-connection
@@ -783,7 +683,7 @@ for cell in top_cells:   #-- search all cell
       continue
   
     region=pya.Region()
-    region.insert(cell.shapes(layer_index))
+    region.insert(layout_cell.shapes(layer_index))
     gds_regions[ly_name]=region
 
     symbol_name_val_index[ly_name]=[f"{ly_num_type[0]}/{ly_num_type[1]}",layer_index]
@@ -797,7 +697,7 @@ for cell in top_cells:   #-- search all cell
     new_layer_info  = get_unused_layer_info(layout)
     new_layer_index = layout.insert_layer(new_layer_info)
     
-    new_region.insert_into(layout, cell.cell_index(), new_layer_index)
+    new_region.insert_into(layout, layout_cell.cell_index(), new_layer_index)
     gds_regions[ly_name]=new_region
 
     symbol_name_val_index[ly_name]=[f"{new_layer_info.layer}/{new_layer_info.datatype}",new_layer_index]
@@ -819,7 +719,8 @@ for cell in top_cells:   #-- search all cell
   ####################################################################
   #--search Metal around TEXT
   port_region_list={}
-
+  region_pin_is_empty=True
+  
   for port_name in sorted_port_layer_pos_list.keys():
     for metal_name in sorted_port_layer_pos_list[port_name].keys():
 
@@ -829,7 +730,8 @@ for cell in top_cells:   #-- search all cell
       ##-- LEYER NAME
       text_name=gdslayer_dict["GDS_LAYER_CONNECT_TEXT"][metal_name][0]
       pin_name =gdslayer_dict["GDS_LAYER_CONNECT_TEXT"][metal_name][1]
-
+      space_um =gdslayer_dict["GDS_LAYER_CONNECT_TEXT"][metal_name][2]
+      
       print(f"[DBG]:   port_name={port_name}, metal_name={metal_name}, text_name={text_name}, pin_name={pin_name}")
       
       ##--DB INDEX
@@ -855,6 +757,8 @@ for cell in top_cells:   #-- search all cell
       
       ##--get REGION
       if region_pin.is_empty():
+        #region_pin_is_empty=True
+          
         ##--- No PIN LAYER ----------------------------------
         for mp in region_metal:  ### get polygon
           #if any(r.inside(p) for p in points):
@@ -865,6 +769,8 @@ for cell in top_cells:   #-- search all cell
             print(f"[DBG]:   port_region_list(text) for {port_name}/{metal_name}: {mr}")
           
       else:  ###-- region_pin.is_not_empty()
+        region_pin_is_empty=False
+        
         ##--- EXIST PIN LAYER -------------------------------
         for pp in region_pin:  #### get polyon
           pr=pya.Region(pp)
@@ -934,7 +840,7 @@ for cell in top_cells:   #-- search all cell
   layer_boundary_num      = gdslayer_dict["GDS_LAYER_INFO"]["BOUNDARY"][0]
   layer_boundary_datatype = gdslayer_dict["GDS_LAYER_INFO"]["BOUNDARY"][1]
   layer_boundary_info=layout.layer(layer_boundary_num, layer_boundary_datatype)
-  boundary_region = pya.Region(cell.shapes(layer_boundary_info)).merged()
+  boundary_region = pya.Region(layout_cell.shapes(layer_boundary_info)).merged()
   if boundary_region.is_empty():
     print(f"[ERR]: boundary layer is not exist in {macro_name}.")
     sys.exit()
@@ -1028,31 +934,51 @@ for cell in top_cells:   #-- search all cell
   lines_obs=[]
   #for metal_name, text_name in gdslayer_dict["GDS_LAYER_CONNECT_TEXT"].items():
   for obs_name in gdslayer_dict["GDS_LAYER_OBS"]:
-
     ##--- get OBS region
-    index_obs_layer = layout.layer( gdslayer_dict["GDS_LAYER_INFO"][obs_name])
-    obs_region      = pya.Region(cell.shapes(index_obs_layer))
-
+    if region_pin_is_empty:
+      index_obs_layer = layout.layer( gdslayer_dict["GDS_LAYER_INFO"][obs_name])
+      obs_region      = pya.Region(layout_cell.shapes(index_obs_layer))
+    else:
+      index_obs_layer = layout.layer( gdslayer_dict["GDS_LAYER_INFO"]["BOUNDARY"])
+      obs_region      = pya.Region(layout_cell.shapes(index_obs_layer))
+        
     ##-- remove port region from obs_region
     if obs_region.is_empty():
       continue
-  
+
+    ##--- get PIN region
+    pin_region=pya.Region()
     for port_name in port_region_list.keys():
       if obs_name in port_region_list[port_name].keys():
-
-        #obs_region = obs_region - port_region[port_name][obs_name]
-        pin_region=pya.Region()
-        for p in port_region_list[port_name][obs_name]:
-          pin_region.insert(p)
         
-        obs_region = obs_region - pin_region
+        #sapce between pin and OSB
+        space_um =gdslayer_dict["GDS_LAYER_CONNECT_TEXT"][obs_name][2]
+        space    = 0 if region_pin_is_empty else space_um / dbu_gds
+        
+        #get pin area
+        for p in port_region_list[port_name][obs_name]:
 
-    ##-- create RECT 
+          #extend pin region
+          region_grow = p.sized(space)
+
+          #ongrid
+          region_grow = region_grow.sized(0)
+          
+          #append as polygon
+          for pp in region_grow:
+            pin_region.insert(pp)
+            
+    ##-- create obs
+    pin_region.merge()
+    obs_region      = obs_region - pin_region
+    
+    ##-- create RECT if obs_region is exist
     if obs_region.is_empty():
       continue
   
     rects=split_manhattan_region_to_rects(obs_region)
-      
+
+    
     lines_obs.append(f"    LAYER {obs_name} ;")
     for rect in rects:
       #print(f"[DEBUG] {pin_name} {rect}")

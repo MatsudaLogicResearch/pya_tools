@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pya_tools"
-version = "0.1.5"
+version = "0.1.6"
 description = "Run KLayout scripts via pip-installed modules"
 authors = [{ name = "LogicResearch K.K.(MATSUDA Masahiro)", email = "matsuda@logic-research.co.jp" }]
 readme = "README.md"
