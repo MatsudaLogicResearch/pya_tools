@@ -287,53 +287,56 @@ def write_lef_tech(tech_dict:dict(), tlef:str, mlef:str):
     outlines2.extend(lines)
 
 
-  ## layer_masterslice
+  ## layer
   #--------------------------------------
-  id="layer_masterslice"
+  id="layer"
   if id in tech_dict.keys():
-    print(f'  [INF] detect {id} blocks')
+
     for n,vv in tech_dict[id].items():
+      if not "type" in vv.keys():
+        print(f"[ERR] no type exist! (MASTERSLICE, CUT, ROUTING or VIA)")
+        sys.exit()
+        
+      print(f'  [INF] detect {id} blocks({n})')
       lines=[]
       lines.append(f'LAYER {n}')
-      lines.append(f'  TYPE MASTERSLICE ;')
-      if vv is not None:
-        lines.extend(conv_dict2lef(param=vv, hier=1))
+      lines.extend(conv_dict2lef(param=vv, hier=1))
       lines.append(f'END {n}')
       lines.append(f'')
       #
       outlines2.extend(lines)
 
-  ## layer_cut
-  #--------------------------------------
-  id="layer_cut"
-  if id in tech_dict.keys():
-    print(f'  [INF] detect {id} blocks')
-    for n,vv in tech_dict[id].items():
-      lines=[]
-      lines.append(f'LAYER {n}')
-      lines.append(f'  TYPE CUT ;')
-      if vv is not None:
-        lines.extend(conv_dict2lef(param=vv, hier=1))
-      lines.append(f'END {n}')
-      lines.append(f'')
-      #
-      outlines2.extend(lines)
-
-  ## layer_routing
-  #--------------------------------------
-  id="layer_routing"
-  if id in tech_dict.keys():
-    print(f'  [INF] detect {id} blocks')
-    for n,vv in tech_dict[id].items():
-      lines=[]
-      lines.append(f'LAYER {n}')
-      lines.append(f'  TYPE ROUTING ;')
-      if vv is not None:
-        lines.extend(conv_dict2lef(param=vv, hier=1))
-      lines.append(f'END {n}')
-      lines.append(f'')
-      #
-      outlines2.extend(lines)
+#  ## layer_cut
+#  #--------------------------------------
+#  id="layer_cut"
+#  if id in tech_dict.keys():
+#    print(f'  [INF] detect {id} blocks')
+#    for n,vv in tech_dict[id].items():
+#      lines=[]
+#      lines.append(f'LAYER {n}')
+#      lines.append(f'  TYPE CUT ;')
+#      if vv is not None:
+#        lines.extend(conv_dict2lef(param=vv, hier=1))
+#      lines.append(f'END {n}')
+#      lines.append(f'')
+#      #
+#      outlines2.extend(lines)
+#
+#  ## layer_routing
+#  #--------------------------------------
+#  id="layer_routing"
+#  if id in tech_dict.keys():
+#    print(f'  [INF] detect {id} blocks')
+#    for n,vv in tech_dict[id].items():
+#      lines=[]
+#      lines.append(f'LAYER {n}')
+#      lines.append(f'  TYPE ROUTING ;')
+#      if vv is not None:
+#        lines.extend(conv_dict2lef(param=vv, hier=1))
+#      lines.append(f'END {n}')
+#      lines.append(f'')
+#      #
+#      outlines2.extend(lines)
 
   ## via_default
   #--------------------------------------

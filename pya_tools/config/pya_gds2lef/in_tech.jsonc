@@ -23,16 +23,19 @@
     "manufacturinggrid": 0.001
   },
 
-//  //----------------------------------------------------------
-//  "layer_masterslice": {
-//    "POLY1":{},
-//    "POLY2":{},
-//    "PDIFF":{}
-//  },
-  
   //----------------------------------------------------------
-  "layer_cut": {
+  "layer": {
+    "POLY1":{
+		  "type" : "MASTERSLICE"
+		},
+    "POLY2":{
+		  "type" : "MASTERSLICE"
+		},
+    "PDIFF":{
+		  "type" : "MASTERSLICE"
+		},
     "Cont":{
+		  "type"     :"CUT",
       "spacing"  :0.18,
       "width"    :0.16,
       "enclosure":[0.05,0.05],
@@ -42,22 +45,8 @@
       "antennacumarearatio": 30,
       "antennacumdiffarearatio": 1000
     },
-    "Via1":{
-      "spacing"            :0.18,
-      "spacing_adjacentcuts_within"   :[0.18,3,0.311],
-      "width"              :0.16,
-      "enclosure_below"    :[null, [0.05,0.05]],
-      "preferenclosure"    :[0.05,0.05],
-      "resistance"         :22.0,
-      "antennacumarearatio": 30,
-      "antennacumdiffarearatio_pwl":[null, [[0,20],[0.159,20],[0.16,80],[100,50000]]],
-      "dccurrentdensity_average"   :[null, 1]
-    }
-  },
-  
-  //----------------------------------------------------------
-  "layer_routing": {
     "Metal1":{
+		  "type"     : "ROUTING",
       "direction": "HORIZONTAL",
       "offset"   : 0.0,
       "spacing"  : 0.6,
@@ -78,7 +67,20 @@
       //"edgecapacitance"            :0.1,
       //"dccurrentdensity_average"   :[null,1]
     },
+    "Via1":{
+		  "type"               :"CUT",
+      "spacing"            :0.18,
+      "spacing_adjacentcuts_within"   :[0.18,3,0.311],
+      "width"              :0.16,
+      "enclosure_below"    :[null, [0.05,0.05]],
+      "preferenclosure"    :[0.05,0.05],
+      "resistance"         :22.0,
+      "antennacumarearatio": 30,
+      "antennacumdiffarearatio_pwl":[null, [[0,20],[0.159,20],[0.16,80],[100,50000]]],
+      "dccurrentdensity_average"   :[null, 1]
+    },
     "Metal2":{
+		  "type"     : "ROUTING",
       "direction": "VERTICAL",
       "offset"   : 0.0,
       "spacing"  : 0.6,
