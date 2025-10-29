@@ -4,6 +4,11 @@
 
 ---
 
+## [0.1.7] 2025-10-29
+### Modified
+- pya_gds2lef
+ - Change layer from BOTTOM to TOP in in_json_tech.
+
 ## [0.1.6] 2025-10-28
 ### Modified
 - pya_gds2lef
